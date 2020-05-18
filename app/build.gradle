@@ -1,6 +1,23 @@
 apply plugin: 'com.android.application'
 
 android {
+
+    signingConfigs {
+        debug_signing {
+            keyAlias 'keyDebug'
+            keyPassword 'PrismaDebug'
+            storeFile file('debug_signing')
+            storePassword 'PrismaDebug'
+        }
+        release_signing {
+            keyAlias 'TodoPagoProd'
+            keyPassword 'KEY_PASSWD'
+            storeFile file('storeFile')
+            storePassword 'STORE_PASSWD'
+        }
+    }
+
+
     compileSdkVersion 28
 
     defaultConfig {
@@ -10,9 +27,18 @@ android {
     }
 
     buildTypes {
-        release {
+
+        debug {
+            signingConfig signingConfigs.debug_signing
+            debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release_signing
         }
     }
 }
