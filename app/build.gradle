@@ -10,7 +10,7 @@ android {
             storePassword 'PrismaDebug'
         }
         release_signing {
-            keyAlias 'TodoPagoProd'
+            keyAlias 'KEYALIAS'
             keyPassword 'KEY_PASSWD'
             storeFile file('storeFile')
             storePassword 'STORE_PASSWD'

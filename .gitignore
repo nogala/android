@@ -67,3 +67,6 @@ import-summary.txt
 
 # sotreFile
 app/storeFile
+Keys/upload-key.jks
+app/upload-key.jks
+app/release/output.json
