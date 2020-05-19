@@ -8,6 +8,8 @@ pipeline {
                 JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
         * */
         JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
+        REPO= "https://github.com/nogala/android.git"
+        WORKANDROID= "android"
     }
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '5')
@@ -25,6 +27,24 @@ pipeline {
         booleanParam defaultValue: true,
                 description: 'Clean workspace',
                 name: 'CLEAN'
+
+        choice choices: ['TEST', 'STAGING', 'DEPLOY', 'RELEASE'],
+                description: 'Type of build: Test only, Test and Staging on nexus or Deploy to Firebase, Release to store',
+                name: 'BUILD_TYPE'
+
+        string defaultValue: 'master',
+                description: 'Branch of code to build',
+                name: 'BRANCH'
+
+        script defaultValue: '1',
+                description: 'Build number',
+                name: 'BUILD_NUMBER'
+
+        credentials credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
+                defaultValue: 'TodoPagoGit',
+                description: 'User of gitHub',
+                name: 'CREDENTIAL_GITHUB',
+                required: true
     }
 
     stages {
@@ -34,12 +54,10 @@ pipeline {
                 script{
                     say ("Start ${STAGE_NAME}")
                     say.simple("Clean workspace: ${params.CLEAN}")
-                    /*
-                        TODO Read all the parameters provided:
-                            example:
-                                The current parameters are:
-                                Clean workspace: ${params.CLEAN}
-                     */
+                    say.simple("Type of build: ${params.BUILD_TYPE}")
+                    say.simple("Repository to build: ${REPO}")
+                    say.simple("Branch: ${params.BRANCH}")
+                    say.simple("Build Number: ${params.BUILD_NUMBER}")
                     say("Stage OK")
                 }
             }
@@ -48,14 +66,12 @@ pipeline {
         stage('Checkout') {
             steps {
                 script{
-                    echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                    cleanWs()
-                    /*
-                        TODO add shared function here
-                            example:
-                            getRepo(workspace, repo, branch, credentialID)
-                     */
-                    echo "*********************************** Stage OK ***********************************"
+                    if (params.CLEAN){
+                        cleanWs()
+                    }
+                    say("Stage ${STAGE_NAME}")
+                    getRepo(WORKANDROID,REPO, params.BRANCH, params.CREDENTIAL_GITHUB)
+                    say("Stage OK")
                 }
             }
         }
