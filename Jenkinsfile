@@ -38,29 +38,32 @@ pipeline {
 
         stage('Read Parameters phase') {
             steps {
-                say ("Start ${STAGE_NAME}")
-                say.simple("Clean workspace: ${params.CLEAN}")
-                /*
-                    TODO Read all the parameters provided:
-                        example:
-                            The current parameters are:
-                            Clean workspace: ${params.CLEAN}
-                 */
-                say("Stage OK")
-
+                script{
+                    say ("Start ${STAGE_NAME}")
+                    say.simple("Clean workspace: ${params.CLEAN}")
+                    /*
+                        TODO Read all the parameters provided:
+                            example:
+                                The current parameters are:
+                                Clean workspace: ${params.CLEAN}
+                     */
+                    say("Stage OK")
+                }
             }
         }
 
         stage('Checkout') {
             steps {
-                echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                cleanWs()
-                /*
-                    TODO add shared function here
-                        example:
-                        getRepo(workspace, repo, branch, credentialID)
-                 */
-                echo "*********************************** Stage OK ***********************************"
+                script{
+                    echo "*********************************** Stage ${STAGE_NAME} ***********************************"
+                    cleanWs()
+                    /*
+                        TODO add shared function here
+                            example:
+                            getRepo(workspace, repo, branch, credentialID)
+                     */
+                    echo "*********************************** Stage OK ***********************************"
+                }
             }
         }
 
