@@ -14,6 +14,7 @@ pipeline {
             example:
                 JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
         * */
+        JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
     }
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '5')
@@ -28,21 +29,25 @@ pipeline {
                 description: 'Clean workspace',
                 name: 'CLEAN'
          */
+        booleanParam defaultValue: true,
+                description: 'Clean workspace',
+                name: 'CLEAN'
     }
 
     stages {
 
         stage('Read Parameters phase') {
             steps {
-                echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-
+                say ("Start ${STAGE_NAME}")
+                say.simple("Clean workspace: ${params.CLEAN}")
                 /*
                     TODO Read all the parameters provided:
                         example:
                             The current parameters are:
                             Clean workspace: ${params.CLEAN}
                  */
-                echo "*********************************** Stage OK ***********************************"
+                say("Stage OK")
+
             }
         }
 
