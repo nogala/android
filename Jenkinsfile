@@ -84,10 +84,6 @@ pipeline {
 
         stage("Build and Test") {
             parallel() {
-                /*
-                    This part will become handy use of parallel stages
-                 */
-            stages{
                 stage('Build') {
                     steps {
                         catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
@@ -120,23 +116,20 @@ pipeline {
                         }
                     }
                 }
-
             }
-
         }
 
-            stage('Decide Upload to Firebase') {
-                steps {
-                    echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                }
-                options {
-                    timeout(time: 1, unit: 'HOURS')
-                }
-                input {
-                    message 'Approve Distribute?'
-                    parameters {
-                        booleanParam defaultValue: true, description: 'Distribuite to Firebase ?', name: 'DEPLOY_FIREBASE'
-                    }
+        stage('Decide Upload to Firebase') {
+            steps {
+                echo "*********************************** Stage ${STAGE_NAME} ***********************************"
+            }
+            options {
+                timeout(time: 1, unit: 'HOURS')
+            }
+            input {
+                message 'Approve Distribute?'
+                parameters {
+                    booleanParam defaultValue: true, description: 'Distribuite to Firebase ?', name: 'DEPLOY_FIREBASE'
                 }
             }
         }
