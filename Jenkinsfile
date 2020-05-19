@@ -87,7 +87,7 @@ pipeline {
                 /*
                     This part will become handy use of parallel stages
                  */
-
+            stages{
                 stage('Build') {
                     steps {
                         catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
@@ -122,6 +122,8 @@ pipeline {
                 }
 
             }
+
+        }
 
             stage('Decide Upload to Firebase') {
                 steps {
