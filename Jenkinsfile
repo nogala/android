@@ -1,10 +1,3 @@
-libraries {
-    /*
-        TODO configurate shared libraries first.
-     */
-    lib('androidLibs@master')
-}
-
 pipeline {
     agent{
         label 'automation_node'
