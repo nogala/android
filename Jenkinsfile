@@ -36,7 +36,7 @@ pipeline {
                 description: 'Branch of code to build',
                 name: 'BRANCH'
 
-        script defaultValue: '1',
+        string defaultValue: '1',
                 description: 'Build number',
                 name: 'BUILD_NUMBER'
 
