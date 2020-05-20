@@ -80,84 +80,92 @@ pipeline {
             steps {
                 script {
                     say("Stage ${STAGE_NAME}")
-                    configCode(WORKANDROID, params.BUILD_NUMBER)
+                    catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
+                        configCode(WORKANDROID, params.BUILD_NUMBER)
+                    }
                     say("Stage OK")
                 }
             }
         }
 
         stage("Build and Test") {
-            parallel()
-                stages {
-                    stage('Build') {
-                        steps {
-                            catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
-                                script {
-                                    say("Stage ${STAGE_NAME}")
-                                    def variants = ["debug", "release"]
-                                    buildCode(WORKANDROID, variants)
-                                    say("Stage OK")
-                                }
+            parallel(){
+
+                stage('Build') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
+                            script {
+                                say("Stage ${STAGE_NAME}")
+                                def variants = ["debug", "release"]
+                                buildCode(WORKANDROID, variants)
+                                say("Stage OK")
                             }
                         }
                     }
-
-                    stage('SonarQube Scanner') {
-                        steps {
-                            catchError(buildResult: 'SUCCESS', message: "Error on Test Sonar", stageResult: 'NOT_BUILT') {
-                                script {
-                                    say("Stage ${STAGE_NAME}")
-                                    testSonar(WORKANDROID, PROJECTKEY)
-                                    say("Stage OK")
-                                }
-                            }
+                    agent{
+                        docker {
+                            args '-u root -v build:/out/apks'
+                            image 'nogala/androidtest:latest'
+                            label 'androidDocker'
+                            reuseNode true
                         }
                     }
                 }
-            }
 
-        stage('Decide Upload to Firebase') {
+                stage('SonarQube Scanner') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', message: "Error on Test Sonar", stageResult: 'NOT_BUILT') {
+                            script {
+                                say("Stage ${STAGE_NAME}")
+                                testSonar(WORKANDROID, PROJECTKEY)
+                                say("Stage OK")
+                            }
+                        }
+                    }
+                    agent{
+                        docker {
+                            args '-u root -v build:/out/apks'
+                            image 'nogala/androidtest:latest'
+                            label 'androidDocker'
+                            reuseNode true
+                        }
+                    }
+                }
+
+            }
+        }
+
+        stage('Distribute phase') {
             options {
                 timeout(time: 1, unit: 'HOURS')
             }
-            input id: 'QUESTION',
-                    message: 'Distribuite',
-                    ok: 'true',
-                    parameters: [
-                            booleanParam(defaultValue: false,
-                                    description: 'Deploy app to firebase ?',
-                                    name: 'DEPLOY_FIREBASE')],
-                    submitterParameter: 'DEPLOY'
+            input {
+                message "Distribuite to firebase?"
+                parameters {
+                    booleanParam(name: 'DEPLOY_FIREBASE',  defaultValue: true, description: "Check de box if want to deploy app to firebase ?")
+                }
+            }
             steps {
-                script {
+                script{
                     say("Stage ${STAGE_NAME}")
-                    say("The response is: ${QUESION.DEPLOY}")
+                    say.debug("The response is: ${DEPLOY_FIREBASE}")
+                    if(DEPLOY_FIREBASE=='true') {
+                        def variants = ["debug", "release"]
+                        deployFirebase(WORKANDROID, variants, APPID)
+                    }
+                    else say.simple("Skip deploy phase")
                     say("Stage OK")
                 }
             }
         }
 
-        stage('Distribute phase') {
-            steps {
-                catchError(buildResult: 'SUCCESS', message: "Error on deploy Variant ${it}", stageResult: 'NOT_BUILT') {
-                    script {
-                        say("Stage ${STAGE_NAME}")
-                        if(params.BUILD_TYPE == "DEPLOY" || params.BUILD_TYPE == "RELEASE") {
-                            def variants = ["debug", "release"]
-                            deployFirebase(WORKANDROID, variants, APPID)
-                        }
-                        else say.simple("Skip deploy phase")
-                        say("Stage OK")
-                    }
-                    }
-                }
-            }
-
         stage('Clean workspace'){
             steps{
                 script {
                     say("Stage ${STAGE_NAME}")
-                    if(params.CLEAN) cleanWs()
+                    if(params.CLEAN) {
+                        cleanWs()
+                    }
                     say("Stage OK")
                 }
             }
