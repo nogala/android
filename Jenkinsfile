@@ -2,31 +2,29 @@ pipeline {
     agent{
         label 'automation_node'
     }
+
     environment {
-        /* TODO Save here all the environment values
-            example:
-                JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
-        * */
         JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
-        REPO= "https://github.com/nogala/android.git"
-        WORKANDROID= "android"
+        REPO = "https://github.com/nogala/android.git"
+        WORKANDROID = "android"
+        PROJECTKEY = "androidTest"
+        APPID= "FIREBASE_APP_ID"
     }
+
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '5')
         preserveStashes buildCount: 5
     }
 
     parameters {
-        /*
-            TODO What are the parameters to use
-                example:
-                booleanParam defaultValue: true,
+
+        booleanParam defaultValue: false,
                 description: 'Clean workspace',
                 name: 'CLEAN'
-         */
+
         booleanParam defaultValue: true,
-                description: 'Clean workspace',
-                name: 'CLEAN'
+                description: 'Show all the commands for debug pipeline',
+                name: 'DEBUG'
 
         choice choices: ['TEST', 'STAGING', 'DEPLOY', 'RELEASE'],
                 description: 'Type of build: Test only, Test and Staging on nexus or Deploy to Firebase, Release to store',
@@ -54,6 +52,7 @@ pipeline {
                 script{
                     say ("Start ${STAGE_NAME}")
                     say.simple("Clean workspace: ${params.CLEAN}")
+                    say.simple("Run pipeline for debug: ${params.DEBUG}")
                     say.simple("Type of build: ${params.BUILD_TYPE}")
                     say.simple("Repository to build: ${REPO}")
                     say.simple("Branch: ${params.BRANCH}")
@@ -66,10 +65,11 @@ pipeline {
         stage('Checkout') {
             steps {
                 script{
-                    if (params.CLEAN){
+                    say("Stage ${STAGE_NAME}")
+                    if (params.CLEAN) {
+                        if (params.DEBUG) say.simple("Cleaning workspace")
                         cleanWs()
                     }
-                    say("Stage ${STAGE_NAME}")
                     getRepo(WORKANDROID,REPO, params.BRANCH, params.CREDENTIAL_GITHUB)
                     say("Stage OK")
                 }
@@ -79,67 +79,60 @@ pipeline {
         stage('Config') {
             steps {
                 script {
+                    say("Stage ${STAGE_NAME}")
                     configCode(WORKANDROID, params.BUILD_NUMBER)
-                    echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                    /*
-                        TODO add configuration functions
-                            example:
-                                replaceString(sourceFile, toSearch, replacement)
-                            on all files needed ...
-                     */
-                    echo "*********************************** Stage OK ***********************************"
+                    say("Stage OK")
                 }
             }
         }
 
         stage("Build and Test") {
-            parallel() {
-                stage('Build') {
-                    steps {
-                        catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
-                            script {
-                                echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                                /*
-                                    TODO add configuration functions
-                                        example:
-                                            buildCode(workspace, command, variant, ....)
-                                        on all files needed ...
-                                 */
-                                echo "*********************************** Stage OK ***********************************"
-
+            parallel()
+                stages {
+                    stage('Build') {
+                        steps {
+                            catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
+                                script {
+                                    say("Stage ${STAGE_NAME}")
+                                    def variants = ["debug", "release"]
+                                    buildCode(WORKANDROID, variants)
+                                    say("Stage OK")
+                                }
                             }
                         }
                     }
-                }
 
-                stage('SonarQube Scanner') {
-                    steps {
-                        catchError(buildResult: 'SUCCESS', message: "Error on Test Sonar", stageResult: 'NOT_BUILT') {
-                            script {
-                                echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                                /*
-                                    TODO withSonarQubeEnv(SonarServer)
-                                        Note: configurate Sonarserver first
-                                 */
-                                echo "*********************************** Stage OK ***********************************"
+                    stage('SonarQube Scanner') {
+                        steps {
+                            catchError(buildResult: 'SUCCESS', message: "Error on Test Sonar", stageResult: 'NOT_BUILT') {
+                                script {
+                                    say("Stage ${STAGE_NAME}")
+                                    testSonar(WORKANDROID, PROJECTKEY)
+                                    say("Stage OK")
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
         stage('Decide Upload to Firebase') {
-            steps {
-                echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-            }
             options {
                 timeout(time: 1, unit: 'HOURS')
             }
-            input {
-                message 'Approve Distribute?'
-                parameters {
-                    booleanParam defaultValue: true, description: 'Distribuite to Firebase ?', name: 'DEPLOY_FIREBASE'
+            input id: 'QUESTION',
+                    message: 'Distribuite',
+                    ok: 'true',
+                    parameters: [
+                            booleanParam(defaultValue: false,
+                                    description: 'Deploy app to firebase ?',
+                                    name: 'DEPLOY_FIREBASE')],
+                    submitterParameter: 'DEPLOY'
+            steps {
+                script {
+                    say("Stage ${STAGE_NAME}")
+                    say("The response is: ${QUESION.DEPLOY}")
+                    say("Stage OK")
                 }
             }
         }
@@ -148,11 +141,13 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', message: "Error on deploy Variant ${it}", stageResult: 'NOT_BUILT') {
                     script {
-                        echo "*********************************** Stage ${STAGE_NAME} ***********************************"
-                        /*
-                            TODO add deploy functions
-                         */
-                        echo "*********************************** Stage OK ***********************************"
+                        say("Stage ${STAGE_NAME}")
+                        if(params.BUILD_TYPE == "DEPLOY" || params.BUILD_TYPE == "RELEASE") {
+                            def variants = ["debug", "release"]
+                            deployFirebase(WORKANDROID, variants, APPID)
+                        }
+                        else say.simple("Skip deploy phase")
+                        say("Stage OK")
                     }
                     }
                 }
@@ -161,12 +156,14 @@ pipeline {
         stage('Clean workspace'){
             steps{
                 script {
-                    if(params.CLEAN){
-                        cleanWs()
-                    }
+                    say("Stage ${STAGE_NAME}")
+                    if(params.CLEAN) cleanWs()
+                    say("Stage OK")
                 }
             }
         }
+
     }
+
 }
 
