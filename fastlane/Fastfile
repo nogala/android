@@ -1,0 +1,12 @@
+fastlane_version "2.148.1"
+default_platform :android
+
+lane :deployApp do
+  firebase_app_distribution(
+      app: "APP_ID",
+      apk_path: "/out/apks/debug/app-VARIANT.apk",
+      firebase_cli_path: "$FIREBASE_HOME",
+      firebase_cli_token: "TOKEN",
+      testers: "norberto.garcia@globant.com",
+  )
+end

@@ -1,0 +1,2 @@
+json_key_file("firebase.json")
+package_name(".com.globant.androidExmaple")
