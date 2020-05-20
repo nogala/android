@@ -79,6 +79,7 @@ pipeline {
         stage('Config') {
             steps {
                 script {
+                    configCode(WORKANDROID, params.BUILD_NUMBER)
                     echo "*********************************** Stage ${STAGE_NAME} ***********************************"
                     /*
                         TODO add configuration functions
