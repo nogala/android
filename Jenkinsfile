@@ -32,7 +32,7 @@ pipeline {
                 description: 'Type of build: Test only, Test and Staging on nexus or Deploy to Firebase, Release to store',
                 name: 'BUILD_TYPE'
 
-        string defaultValue: 'master',
+        string defaultValue: env.BRANCH,
                 description: 'Branch of code to build',
                 name: 'BRANCH'
 
