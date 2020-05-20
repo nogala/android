@@ -112,7 +112,7 @@ pipeline {
                     agent{
                         docker {
                             args '-u root -v build:/out/apks'
-                            image 'nogala/androidtest:latest'
+                            image 'nogala/android-sdk:latest'
                             label 'androidDocker'
                             reuseNode true
                         }
@@ -132,7 +132,7 @@ pipeline {
                     agent{
                         docker {
                             args '-u root -v build:/out/apks'
-                            image 'nogala/androidtest:latest'
+                            image 'nogala/android-sdk:latest'
                             label 'androidDocker'
                             reuseNode true
                         }
@@ -166,7 +166,7 @@ pipeline {
             agent{
                 docker {
                     args '-u root -v build:/out/apks'
-                    image 'nogala/androidtest:latest'
+                    image 'nogala/android-sdk:latest'
                     label 'androidDocker'
                     reuseNode true
                 }
