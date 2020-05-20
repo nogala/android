@@ -69,7 +69,7 @@ pipeline {
                 script{
                     say("Stage ${STAGE_NAME}")
                     if (params.CLEAN) {
-                        if (params.DEBUG) say.simple("Cleaning workspace")
+                        say.debug("Cleaning workspace")
                         cleanWs()
                     }
                     getRepo(WORKANDROID,REPO, params.BRANCH, params.CREDENTIAL_GITHUB)

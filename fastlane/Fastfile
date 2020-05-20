@@ -7,6 +7,6 @@ lane :deployApp do
       apk_path: "/out/apks/debug/app-VARIANT.apk",
       firebase_cli_path: "$FIREBASE_HOME",
       firebase_cli_token: "TOKEN",
-      testers: "norberto.garcia@globant.com",
+      testers: "norberto.garcia@globant.com"
   )
 end
