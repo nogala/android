@@ -6,7 +6,6 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME = "/usr/lib/jvm/java-1.8-openjdk"
         REPO = "https://github.com/nogala/android.git"
         WORKANDROID = "android"
         PROJECTKEY = "androidTest"
