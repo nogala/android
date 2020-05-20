@@ -157,6 +157,14 @@ pipeline {
                     say("Stage OK")
                 }
             }
+            agent{
+                docker {
+                    args '-u root -v build:/out/apks'
+                    image 'nogala/androidtest:latest'
+                    label 'androidDocker'
+                    reuseNode true
+                }
+            }
         }
 
         stage('Clean workspace'){
