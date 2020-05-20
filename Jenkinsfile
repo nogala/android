@@ -1,3 +1,5 @@
+def variants = ["debug", "release"]
+
 pipeline {
     agent{
         label 'automation_node'
@@ -96,7 +98,6 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', message: "Error on build", stageResult: 'NOT_BUILT') {
                             script {
                                 say("Stage ${STAGE_NAME}")
-                                def variants = ["debug", "release"]
                                 buildCode(WORKANDROID, variants)
                                 say("Stage OK")
                             }
@@ -150,7 +151,6 @@ pipeline {
                     say("Stage ${STAGE_NAME}")
                     say.debug("The response is: ${DEPLOY_FIREBASE}")
                     if(DEPLOY_FIREBASE=='true') {
-                        def variants = ["debug", "release"]
                         deployFirebase(WORKANDROID, variants, APPID)
                     }
                     else say.simple("Skip deploy phase")
