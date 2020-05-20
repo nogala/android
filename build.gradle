@@ -6,7 +6,14 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.3'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.1"
     }
+}
+
+plugins {
+    id "maven"
+    id "maven-publish"
+    id "org.sonarqube" version "2.7.1"
 }
 
 allprojects {
