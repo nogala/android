@@ -11,6 +11,13 @@ pipeline {
         WORKANDROID = "android"
         PROJECTKEY = "androidTest"
         APPID= "FIREBASE_APP_ID"
+        ANDROID_SDK_HOME = "/opt/android-sdk-linux"
+        ANDROID_SDK_ROOT = "/opt/android-sdk-linux"
+        ANDROID_HOME = "/opt/android-sdk-linux"
+        ANDROID_SDK = "/opt/android-sdk-linux"
+        GRADLE_HOME = "/opt/gradle"
+        JAVA_HOME = "/usr/lib/jvm/java-8-openjdk-amd64/jre"
+        MAVEN_HOME = "/usr/share/maven"
     }
 
     options {
